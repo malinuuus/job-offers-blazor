@@ -1,0 +1,18 @@
+﻿.start-options {
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    align-content: stretch;
+}
+
+.start-options h1 {
+    margin-bottom: 20px;
+}
+
+.start-options a {
+    text-decoration: none;
+    color: #fff;
+    margin: 5px 0;
+    width: 200px;
+}

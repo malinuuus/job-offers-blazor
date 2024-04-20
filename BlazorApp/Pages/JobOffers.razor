@@ -1,0 +1,75 @@
+﻿@page "/offers"
+@using System.Diagnostics;
+@attribute [Authorize]
+@inject JobOffersService jobOffersService
+@inject AuthenticationStateProvider authStateProvider
+
+<PageTitle>Oferty pracy</PageTitle>
+
+<div>
+    <AuthorizeView Roles="Recruit">
+        <h3>Oferty pracy</h3>
+    </AuthorizeView>
+    <AuthorizeView Roles="Recruiter">
+        <h3>Oferty pracy twojej firmy</h3>
+        <a href="/offers/add">
+            <span class="oi oi-plus"></span>
+        </a>
+    </AuthorizeView>
+</div>
+
+<input @oninput="FilterJobOffers" placeholder="Szukaj..."/>
+
+@if (jobOffers == null)
+{
+    <p>Ładowanie...</p>
+}
+else
+{
+    if (!jobOffers.Any())
+    {
+        <p>Nic nie znaleziono.</p>
+    }
+    else
+    {
+        foreach (var jobOffer in jobOffers)
+        {
+            <a href="/offers/@jobOffer.Id" class="job-offer shadow">
+                <p class="job-offer-position">@jobOffer.Position</p>
+                <p class="job-offer-salary">@jobOffer.LowerLimit - @jobOffer.UpperLimit zł</p>
+                <p class="job-offer-company">@jobOffer.Company.Name</p>
+                <p class="job-offer-city">@jobOffer.City.Name</p>
+                <p class="job-offer-mode">@jobOffer.WorkModeToString</p>
+            </a>
+        }
+    }
+}
+
+@code {
+    private IEnumerable<ClassLib.JobOffer>? jobOffers;
+
+    private async Task<IEnumerable<ClassLib.JobOffer>?> GetJobOffersAsync(string searchQuery = "")
+    {
+        var authState = await authStateProvider.GetAuthenticationStateAsync();
+        var user = authState.User;
+
+        if (!user.IsInRole("Recruiter")) return await jobOffersService.GetJobOffersAsync(searchQuery);
+        var companyIdText = user.FindFirst("CompanyId")?.Value;
+
+        if (int.TryParse(companyIdText, out int companyId))
+            return await jobOffersService.GetJobOffersAsync(companyId, searchQuery);
+
+        return null;
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        jobOffers = await GetJobOffersAsync();
+    }
+
+    private async Task FilterJobOffers(ChangeEventArgs e)
+    {
+        if (e.Value is string searchQuery)
+            jobOffers = await GetJobOffersAsync(searchQuery);
+    }
+}

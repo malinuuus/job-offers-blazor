@@ -1,0 +1,125 @@
+﻿@page "/offers/{id:int}"
+@using System.Diagnostics;
+@attribute [Authorize]
+@inject JobOffersService jobOffersService
+@inject ApplicationsService applicationsService
+@inject AuthenticationStateProvider authStateProvider
+
+<PageTitle>@(jobOffer == null ? "Ładowanie..." : jobOffer.Position)</PageTitle>
+
+@if (applySucceed)
+{
+    <Modal Message="Poprawnie aplikowano na to stanowisko"/>
+}
+else if (applyFailed)
+{
+    <Modal
+        Message="Aplikowałeś/aś już wcześniej na to stanowisko!"
+        IsError=true/>
+}
+
+@if (isLoading)
+{
+    <p>Ładowanie...</p>
+}
+else
+{
+    if (jobOffer == null)
+    {
+        <p>Ta oferta pracy nie istnieje lub została usunięta!</p>
+    }
+    else
+    {
+        <JobOfferScheme JobOffer="jobOffer"/>
+
+        <AuthorizeView Roles="Recruit">
+            <div class="offer-buttons offer-card shadow">
+                <button @onclick="Apply" class="form-btn">Aplikuj</button>
+            </div>
+        </AuthorizeView>
+        <AuthorizeView Roles="Recruiter">
+            <div class="offer-card shadow">
+                <div class="offer-header">
+                    <h3 class="section-header">Osoby, które aplikowały</h3>
+                </div>
+                <div class="offer-body">
+                    <table class="recruits-table">
+                        @foreach (var application in jobOffer.Applications)
+                        {
+                            <tr>
+                                <td>
+                                    <p class="recruit-name">@application.Recruit.FirstName @application.Recruit.LastName</p>
+                                    <div class="recruit-info">
+                                        <p>@application.Recruit.Email | @application.Recruit.PhoneNumber</p>
+                                        <p>@FormatDate(application.CreatedAt)</p>
+                                        <span class="status">
+                                            <span class="status-color @(@application.IsApproved ? "green" : application.IsRejected ? "red" : "blue")"></span>
+                                            @application.Status
+                                        </span>
+                                    </div>
+                                </td>
+                                @if (!application.IsApproved && !application.IsRejected)
+                                {
+                                    <td class="status-buttons">
+                                        <button @onclick="() => ApproveRecruit(application)" class="approve-btn">
+                                            <span class="oi oi-check" aria-hidden="true"></span>
+                                            Zaakceptuj
+                                        </button>
+                                        <button @onclick="() => RejectRecruit(application)" class="reject-btn">
+                                            <span class="oi oi-x" aria-hidden="true"></span>
+                                            Odrzuć
+                                        </button>
+                                    </td>
+                                }
+
+                            </tr>
+                        }
+                    </table>
+                </div>
+            </div>
+        </AuthorizeView>
+    }
+}
+
+@code {
+    [Parameter] public int Id { get; set; }
+
+    private bool isLoading = true;
+    private ClassLib.JobOffer? jobOffer;
+    private bool applySucceed = false;
+    private bool applyFailed = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        jobOffer = await jobOffersService.GetJobOfferByIdAsync(Id);
+        isLoading = false;
+    }
+
+    private async Task Apply()
+    {
+        applySucceed = false;
+        applyFailed = false;
+
+        var authState = await authStateProvider.GetAuthenticationStateAsync();
+        var user = authState.User;
+        var userIdText = user.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+        if (int.TryParse(userIdText, out int userId))
+        {
+            applySucceed = await jobOffersService.ApplyForJobAsync(Id, userId);
+            applyFailed = !applySucceed;
+        }
+    }
+
+    private async Task ApproveRecruit(Application application)
+    {
+        await applicationsService.ApproveApplicationAsync(application);
+    }
+
+    private async Task RejectRecruit(Application application)
+    {
+        await applicationsService.RejectApplicationAsync(application);
+    }
+
+    private string FormatDate(DateTime date) => $"{date:M} {date:yyyy}";
+}

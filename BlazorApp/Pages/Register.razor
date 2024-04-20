@@ -1,0 +1,86 @@
+﻿@page "/register"
+@using System.Diagnostics;
+@using System.ComponentModel.DataAnnotations;
+@inject UserService userService
+@inject NavigationManager navManager
+
+@if (signUpSucceed)
+{
+	<Modal
+		Message="Pomyślnie zarejestrowano"
+		OnAccept="@(() => navManager.NavigateTo("/login", true))"
+	/>
+}
+
+<EditForm Model="signUpModel" OnValidSubmit="SignUp" class="my-form shadow">
+	<DataAnnotationsValidator />
+	<div class="form-header">
+		<h3>Zarejestruj się</h3>
+	</div>
+	<div class="form-body">
+		@if (signUpFailed)
+		{
+			<ErrorPopup Message="Podany email jest zajęty!" />
+		}
+
+		<div class="form-elem">
+			<label for="first-name">Imię</label>
+			<InputText @bind-Value="signUpModel.FirstName" class="form-input" id="first-name" placeholder="Imię" />
+		</div>
+		<div class="form-elem">
+			<label for="last-name">Nazwisko</label>
+			<InputText @bind-Value="signUpModel.LastName" class="form-input" id="last-name" placeholder="Nazwisko" />
+		</div>
+		<div class="form-elem">
+			<label for="email">Email</label>
+			<InputText @bind-Value="signUpModel.Email" class="form-input" id="email" placeholder="Email" type="email" />
+		</div>
+		<div class="form-elem">
+			<label for="phone">Numer telefonu</label>
+			<InputText @bind-Value="signUpModel.PhoneNumber" class="form-input" id="phone" placeholder="Numer telefonu" />
+		</div>
+		<div class="form-elem">
+			<label for="password">Hasło</label>
+			<InputText @bind-Value="signUpModel.Password" class="form-input" id="password" placeholder="Hasło" type="password" />
+		</div>
+		<div class="form-btn-container">
+			@if (signingUp)
+			{
+				<button class="form-btn" disabled>Rejestracja...</button>
+			}
+			else
+			{
+				<button class="form-btn" type="submit">Zarejestruj</button>
+			}
+		</div>
+	</div>
+</EditForm>
+
+@code {
+	private class SignUpModel
+	{
+		[Required]
+		public string FirstName { get; set; }
+		[Required]
+		public string LastName { get; set; }
+		[Required]
+		public string Email { get; set; }
+		[Required]
+		public string PhoneNumber { get; set; }
+		[Required]
+		public string Password { get; set; }
+	}
+
+	private SignUpModel signUpModel = new();
+	private bool signingUp = false;
+	private bool signUpSucceed = false;
+	private bool signUpFailed = false;
+
+	private async Task SignUp()
+	{
+		signingUp = true;
+		signUpSucceed = await userService.TryCreateRecruitAsync(signUpModel.FirstName, signUpModel.LastName, signUpModel.Email, signUpModel.PhoneNumber, signUpModel.Password);
+		signUpFailed = !signUpSucceed;
+		signingUp = false;
+	}
+}

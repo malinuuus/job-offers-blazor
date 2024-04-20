@@ -1,0 +1,83 @@
+﻿.offer-card {
+    border-radius: 10px;
+    margin-bottom: 20px;
+}
+
+.offer-header {
+    display: flex;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 10px;
+    padding: 20px;
+}
+
+.offer-header-info {
+    padding-top: 20px;
+}
+
+.offer-position {
+    font-size: 1.1em;
+    font-weight: bold;
+}
+
+.offer-company {
+    font-size: 0.9em;
+}
+
+.offer-header-salary {
+    background: #e2e2e2;
+    padding: 20px;
+    border-radius: 6px;
+    font-weight: bold;
+    font-size: 1.1em;
+    display: flex;
+    align-items: baseline;
+}
+
+.salary-inputs {
+    width: 200px;
+}
+
+.salary-inputs input {
+    width: 40%;
+    background: inherit;
+}
+
+.offer-body {
+    padding: 20px;
+    border-top: 1px solid #c7c7c7;
+}
+
+.offer-body p:empty:after {
+    content: "";
+    display: inline-block;
+}
+
+.offer-details {
+    display: flex;
+    flex-wrap: wrap;
+}
+
+.offer-detail {
+    display: flex;
+    align-items: center;
+    flex-basis: 50%;
+    margin: 10px 0;
+}
+
+.offer-detail .icon {
+    background: #e2e2e2;
+    padding: 10px;
+    border-radius: 6px;
+    margin-right: 10px;
+}
+
+.section-header {
+    font-size: 1.4em;
+    font-weight: bold;
+}
+
+.offer-buttons {
+    padding: 20px 0;
+    text-align: center;
+}

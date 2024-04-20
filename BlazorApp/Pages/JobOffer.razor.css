@@ -1,0 +1,39 @@
+﻿.recruits-table {
+    display: block;
+    white-space: nowrap;
+    overflow-x: auto;
+}
+
+.recruits-table td {
+    padding-bottom: 14px;
+}
+
+.recruit-name {
+    font-weight: bold;
+}
+
+.recruit-info,
+.status-buttons .approve-btn,
+.status-buttons .reject-btn {
+    font-size: 0.9em;
+    color: var(--gray-font);
+}
+
+.status-buttons .approve-btn,
+.status-buttons .reject-btn {
+    background: none;
+    padding: 6px;
+    margin: 0 4px;
+    border: none;
+    border-bottom: 1px solid var(--gray-font);
+}
+
+.status-buttons .approve-btn:hover {
+    color: #4cff00;
+    border-bottom: 1px solid #4cff00;
+}
+
+.status-buttons .reject-btn:hover {
+    color: #ff0000;
+    border-bottom: 1px solid #ff0000;
+}

@@ -1,0 +1,82 @@
+﻿@page "/login"
+@inject UserService userService
+@inject AuthenticationStateProvider authStateProvider
+@inject NavigationManager navManager
+
+<PageTitle>Logowanie</PageTitle>
+
+<EditForm Model="loginModel" OnSubmit="Authenticate" class="my-form shadow">
+	<div class="form-header">
+		<h3>Zaloguj się</h3>
+	</div>
+	<div class="form-body">
+		@if (loginFailed)
+		{
+			<ErrorPopup Message="Błędny email lub hasło!" />
+		}
+
+		<div class="form-elem">
+			<label for="email">Email</label>
+			<InputText @bind-Value="loginModel.Email" class="form-input" id="email" placeholder="Email" type="email" />
+		</div>
+		<div class="form-elem">
+			<label for="password">Hasło</label>
+			<InputText @bind-Value="loginModel.Password" class="form-input" id="password" placeholder="Hasło" type="password" />
+		</div>
+		<div class="form-btn-container">
+			@if (logging)
+			{
+				<button class="form-btn" disabled>Logowanie...</button>
+			}
+			else
+			{
+				<button class="form-btn" type="submit">Zaloguj się</button>
+			}
+		</div>
+	</div>
+</EditForm>
+
+@code {
+	private class LoginModel
+	{
+		public string Email { get; set; }
+		public string Password { get; set; }
+	}
+
+	private LoginModel loginModel = new();
+	private bool loginFailed = false;
+	private bool logging = false;
+
+	private async Task Authenticate()
+	{
+		logging = true;
+		var userAccount = await userService.GetAccountAsync(loginModel.Email, loginModel.Password);
+
+		if (userAccount == null)
+		{
+			loginFailed = true;
+		}
+		else
+		{
+			var customAuthStateProvider = (CustomAuthenticationStateProvider)authStateProvider;
+			var userSession = new UserSession()
+			{
+				Id = userAccount.Id,
+				Name = userAccount.FirstName,
+				Role = userAccount is Recruit ? "Recruit" : "Recruiter"
+			};
+
+			if (userAccount is Recruiter recruiter)
+			{
+				userSession.CompanyId = recruiter.CompanyId;
+				userSession.CompanyName = recruiter.Company.Name;
+			}
+
+			loginFailed = false;
+			await customAuthStateProvider.UpdateAuthenticationState(userSession);
+			navManager.NavigateTo("/", true);
+		}
+
+		logging = false;
+	}
+}

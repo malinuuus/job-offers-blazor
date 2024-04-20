@@ -1,0 +1,47 @@
+﻿.my-form {
+    border-radius: 6px;
+    max-width: 450px;
+    margin: 0 auto;
+}
+
+.form-header {
+    border-bottom: 1px solid rgba(194, 194, 194, 1);
+    padding: 20px;
+    text-align: center;
+}
+
+.form-body {
+    padding: 40px;
+}
+
+.form-elem {
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 20px;
+}
+
+.form-elem label {
+    color: var(--gray-font);
+    font-size: 0.9em;
+}
+
+.form-input {
+    padding: 4px;
+    border: none;
+    border-bottom: 1px solid var(--gray-font);
+}
+
+.form-btn-container {
+    text-align: center;
+}
+
+.form-btn {
+    background: #300e61;
+    color: #fff;
+    padding: 10px 20px;
+    border-radius: 6px;
+}
+
+.form-btn:hover {
+    background: #431d7b;
+}

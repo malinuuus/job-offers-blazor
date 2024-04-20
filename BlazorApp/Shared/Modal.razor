@@ -1,0 +1,57 @@
+﻿@if (isVisible)
+{
+	<div class="my-modal-container">
+		<div class="my-modal">
+			<div class="my-modal-header">
+				<span class="oi @(IsError ? "oi-circle-x" : "oi-circle-check") icon" aria-hidden="true"></span>
+				<p>@Message</p>
+			</div>
+			<div class="my-modal-buttons">
+				<button @onclick="InvokeOnAccept">Ok</button>
+			</div>
+		</div>
+	</div>
+}
+
+<style>
+	.my-modal {
+		border: 8px solid @color;
+	}
+
+	.my-modal-header .icon {
+		color: @color;
+	}
+
+	.my-modal-buttons {
+		border-top: 1px solid @color;
+	}
+
+	.my-modal-buttons button {
+		border: 1px solid @color;
+	}
+</style>
+
+@code {
+	[Parameter]
+	public string Message { get; set; }
+	[Parameter]
+	public Action? OnAccept { get; set; }
+	[Parameter]
+	public bool IsError { get; set; } = false;
+
+	private string color;
+	public bool isVisible = true;
+
+	protected override void OnInitialized()
+	{
+		base.OnInitialized();
+		color = IsError ? "#d6463c" : "#609f44";
+		Console.WriteLine(isVisible);
+	}
+
+	private void InvokeOnAccept()
+	{
+		OnAccept?.Invoke();
+		isVisible = false;
+	}
+}

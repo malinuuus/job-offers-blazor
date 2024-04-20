@@ -1,0 +1,13 @@
+﻿.error-popup {
+    background: #f7a3a3;
+    padding: 20px;
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    border-radius: 6px;
+}
+
+.error-popup .icon {
+    font-size: 1.5em;
+    margin-right: 10px;
+}

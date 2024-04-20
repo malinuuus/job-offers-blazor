@@ -1,0 +1,81 @@
+﻿@page "/offers/add"
+@using System.Diagnostics
+@attribute [Authorize(Roles = "Recruiter")]
+@inject JobOffersService jobOffersService
+@inject NavigationManager navManager
+@inject AuthenticationStateProvider authStateProvider
+
+@if (addOfferSucceed)
+{
+    <Modal
+        Message="Poprawnie dodano ofertę pracy"
+        OnAccept="() => HandleModalClosed(true)"/>
+}
+else if (addOfferFailed)
+{
+    <Modal
+        Message="Nie udało się dodać oferty pracy!"
+        IsError=true
+        OnAccept="() => HandleModalClosed()"/>
+}
+
+@if (cities != null)
+{
+    <JobOfferScheme
+        RecruitersCompany="recruitersCompany"
+        Cities="cities"
+        OnJobOfferAdd="AddJobOfferAsync"/>
+}
+else
+{
+    <p>Ładowanie...</p>
+}
+
+@code {
+    private IEnumerable<City>? cities;
+    private ClassLib.JobOffer? newJobOffer;
+    private Company recruitersCompany;
+    private bool addOfferSucceed = false;
+    private bool addOfferFailed = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        cities = await jobOffersService.GetCitiesAsync();
+        Debug.WriteLine(cities);
+        
+        var authState = await authStateProvider.GetAuthenticationStateAsync();
+        var user = authState.User;
+        var companyIdText = user.FindFirst("CompanyId")?.Value;
+
+        if (int.TryParse(companyIdText, out int companyId))
+        {
+            var companyName = user.FindFirst("CompanyName")?.Value;
+            recruitersCompany = new Company(companyName) { Id = companyId };
+        }
+    }
+
+    private async Task AddJobOfferAsync(ClassLib.JobOffer jobOffer)
+    {
+        if (newJobOffer == null)
+        {
+            newJobOffer = await jobOffersService.AddJobOfferAsync(jobOffer);
+            addOfferSucceed = newJobOffer != null;
+            addOfferFailed = !addOfferSucceed;
+            StateHasChanged();
+        }
+    }
+
+    private void HandleModalClosed(bool isSuccess = false)
+    {
+        addOfferFailed = false;
+        addOfferSucceed = false;
+        StateHasChanged();
+
+        if (isSuccess && newJobOffer != null)
+        {
+            int id = newJobOffer.Id;
+            newJobOffer = null;
+            navManager.NavigateTo($"/offers/{id}", true);
+        }
+    }
+}

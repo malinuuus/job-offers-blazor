@@ -1,0 +1,28 @@
+﻿.job-offer {
+    display: block;
+    text-decoration: none;
+    color: #000;
+    padding: 10px 20px;
+    margin: 30px 0;
+    border-radius: 6px;
+}
+
+.job-offer-position {
+    font-weight: bold;
+    font-size: 1.1em;
+}
+
+.job-offer-salary {
+    font-weight: bold;
+}
+
+.job-offer-city {
+    font-size: 0.9em;
+}
+
+.job-offer-salary,
+.job-offer-company,
+.job-offer-city,
+.job-offer-mode {
+    color: var(--gray-font);
+}

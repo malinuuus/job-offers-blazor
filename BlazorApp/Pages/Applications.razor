@@ -1,0 +1,50 @@
+﻿@page "/applications"
+@attribute [Authorize(Roles = "Recruit")]
+@inject AuthenticationStateProvider authStateProvider
+@inject ApplicationsService applicationsService
+
+@if (applications == null)
+{
+	<p>Ładowanie...</p>
+}
+else
+{
+	<h3 class="applications-title">
+		<span>Moje aplikacje</span>
+		<span class="number">@applications.Count()</span>
+	</h3>
+
+	foreach (var application in applications)
+	{
+		<div class="application shadow">
+			<div class="application-info">
+				<p class="application-position">@application.JobOffer.Position</p>
+				<p class="application-company">@application.JobOffer.Company.Name</p>
+				<p class="application-city">@application.JobOffer.City.Name</p>
+			</div>
+			<div class="application-body">
+				<span>koniec: @application.JobOffer.ExpirationDate.ToString("d")</span>
+				<span class="status">
+					<span class="status-color @(@application.IsApproved ? "green" : application.IsRejected ? "red" : "blue")"></span>
+					@application.Status
+				</span>
+			</div>
+		</div>
+	}
+}
+
+@code {
+	private IEnumerable<Application>? applications;
+
+	protected override async Task OnInitializedAsync()
+	{
+		var authState = await authStateProvider.GetAuthenticationStateAsync();
+		var user = authState.User;
+		var userIdText = user.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+		if (int.TryParse(userIdText, out int userId))
+		{
+			applications = await applicationsService.GetRecruitsApplicationsAsync(userId);
+		}
+	}
+}

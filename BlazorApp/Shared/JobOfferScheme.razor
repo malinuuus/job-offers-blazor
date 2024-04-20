@@ -1,0 +1,180 @@
+﻿@using System.ComponentModel.DataAnnotations;
+@using System.Diagnostics;
+
+<EditForm Model="jobOfferModel" OnSubmit="HandleSubmit">
+    <div class="offer-card shadow">
+        <div class="offer-header">
+            <div class="offer-header-info">
+                @if (isAddingMode)
+                {
+                    <InputText @bind-Value="jobOfferModel.Position" placeholder="Nazwa stanowiska"/>
+                    <p class="offer-company">@RecruitersCompany?.Name</p>
+                }
+                else if (JobOffer.Position != null)
+                {
+                    <p class="offer-position">@JobOffer.Position</p>
+                    <p class="offer-company">@JobOffer.Company.Name</p>
+                }
+            </div>
+            <div class="offer-header-salary">
+                <span class="oi oi-dollar" aria-hidden="true"></span>
+                @if (isAddingMode)
+                {
+                    <div class="salary-inputs">
+                        <InputNumber @bind-Value="jobOfferModel.LowerLimit" min="0"/>
+                        <span>-</span>
+                        <InputNumber @bind-Value="jobOfferModel.UpperLimit" min="0"/>
+                        <span>zł</span>
+                    </div>
+                }
+                else
+                {
+                    <span>@JobOffer.LowerLimit - @JobOffer.UpperLimit zł</span>
+                }
+            </div>
+        </div>
+        <div class="offer-body">
+            <div class="offer-details">
+                <div class="offer-detail">
+                    <span class="oi oi-location icon" aria-hidden="true"></span>
+                    @if (isAddingMode && Cities != null)
+                    {
+                        <div>
+                            <label for="city-select">Wybierz miasto</label>
+                            <InputSelect @bind-Value="jobOfferModel.CityId" id="city-select">
+                                @foreach (var city in Cities)
+                                {
+                                    <option value="@city.Id">@city.Name</option>
+                                }
+                            </InputSelect>
+                        </div>
+                    }
+                    else
+                    {
+                        <p>@JobOffer?.City.Name</p>
+                    }
+                </div>
+                <div class="offer-detail">
+                    <span class="oi oi-timer icon" aria-hidden="true"></span>
+                    @if (isAddingMode)
+                    {
+                        <div>
+                            <label for="exp-date">Data zakończenia</label>
+                            <InputDate @bind-Value="jobOfferModel.ExpirationDate" id="exp-date"/>
+                        </div>
+                    }
+                    else
+                    {
+                        <p>ważne jeszcze @JobOffer.TimeLeft.Days dni</p>
+                    }
+                </div>
+                <div class="offer-detail">
+                    <span class="oi oi-pie-chart icon" aria-hidden="true"></span>
+                    @if (isAddingMode)
+                    {
+                        <div>
+                            <InputCheckbox @bind-Value="jobOfferModel.IsFullTime" id="work-mode-checkbox"/>
+                            <label for="work-mode-checkbox">Pełen etat</label>
+                        </div>
+                    }
+                    else
+                    {
+                        <p>@JobOffer.IsFullTimeToString</p>
+                    }
+                </div>
+                <div class="offer-detail">
+                    <span class="oi oi-document icon" aria-hidden="true"></span>
+                    @if (isAddingMode)
+                    {
+                        <div>
+                            <label for="work-mode-select">Tryb pracy</label>
+                            <InputSelect @bind-Value="jobOfferModel.WorkMode" id="work-mode-select">
+                                @foreach (var workMode in JobOffer.WorkModeDict)
+                                {
+                                    <option value="@workMode.Key">@workMode.Value</option>
+                                }
+                            </InputSelect>
+                        </div>
+                    }
+                    else
+                    {
+                        <p>@JobOffer.WorkModeToString</p>
+                    }
+                </div>
+            </div>
+        </div>
+        <div class="offer-body">
+            <h3 class="section-header">O stanowisku</h3>
+            @if (isAddingMode)
+            {
+                <InputTextArea @bind-Value="jobOfferModel.Description"></InputTextArea>
+            }
+            else if (JobOffer.Description != null)
+            {
+                @foreach (string line in JobOffer.Description.Split('\n'))
+                {
+                    <p>@line</p>
+                }
+            }
+        </div>
+    </div>
+
+    @if (isAddingMode)
+    {
+        <div class="offer-buttons offer-card shadow">
+            <button type="submit" class="form-btn">Dodaj</button>
+        </div>
+    }
+</EditForm>
+
+@code {
+    [Parameter] public JobOffer? JobOffer { get; set; }
+    [Parameter] public Company? RecruitersCompany { get; set; }
+    [Parameter] public IEnumerable<City>? Cities { get; set; }
+    [Parameter] public Func<JobOffer, Task>? OnJobOfferAdd { get; set; }
+
+    private bool isAddingMode;
+    private JobOfferModel jobOfferModel = new();
+    private DateTime expirationDate;
+
+    protected override void OnParametersSet()
+    {
+        isAddingMode = JobOffer == null;
+
+        if (Cities != null)
+            jobOfferModel.CityId = Cities.ElementAt(0).Id;
+    }
+
+    private async Task HandleSubmit()
+    {
+        if (OnJobOfferAdd != null && RecruitersCompany != null)
+        {
+            var jobOffer = new JobOffer(
+                jobOfferModel.Position,
+                RecruitersCompany.Id,
+                jobOfferModel.LowerLimit,
+                jobOfferModel.UpperLimit,
+                jobOfferModel.IsFullTime,
+                jobOfferModel.CityId,
+                jobOfferModel.WorkMode,
+                jobOfferModel.Description,
+                jobOfferModel.ExpirationDate,
+                DateTime.Now
+            );
+            await OnJobOfferAdd(jobOffer);
+        }
+    }
+
+    public class JobOfferModel
+    {
+        [Required] public string Position { get; set; } = "";
+        [Range(0, int.MaxValue)] public float LowerLimit { get; set; }
+        [Range(0, int.MaxValue)] public float UpperLimit { get; set; }
+        [Required] public bool IsFullTime { get; set; } = true;
+        [Required] public int CityId { get; set; }
+        [Required] public WorkMode WorkMode { get; set; } = WorkMode.Stationary;
+        public string Description { get; set; } = "";
+        [Required] public DateTime ExpirationDate { get; set; } = DateTime.Now.AddDays(14);
+    }
+
+}

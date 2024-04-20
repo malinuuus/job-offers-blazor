@@ -1,0 +1,41 @@
+﻿.my-modal-container {
+    position: fixed;
+    width: 100%;
+    height: 100%;
+    top: 0;
+    left: 0;
+    z-index: 2;
+    background: rgba(0, 0, 0, .7);
+}
+
+.my-modal {
+    background: #fff;
+    width: 50%;
+    margin: 30vh auto 0 auto;
+    border-radius: 6px;
+}
+
+.my-modal-header,
+.my-modal-buttons {
+    padding: 20px;
+}
+
+.my-modal-header {
+    display: flex;
+    align-items: center;
+}
+
+.my-modal-header .icon {
+    font-size: 1.4em;
+    margin-right: 10px;
+}
+
+.my-modal-buttons {
+    text-align: center;
+}
+
+.my-modal-buttons button {
+    border-radius: 6px;
+    padding: 5px 20px;
+    background: inherit;
+}
